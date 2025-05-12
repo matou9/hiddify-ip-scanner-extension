@@ -78,10 +78,24 @@ func NewCleanIPExtension() ex.Extension {
 func (e *CleanIPExtension) Ping(ip netip.Addr) (cleanip_scanner.IPInfo, error) {
 	config := e.Base.Data.Config
 	for _, outbound := range config.Outbounds {
-		outbound.VLESSOptions.Server = ip.String()
-		outbound.VMessOptions.Server = ip.String()
-		outbound.TrojanOptions.Server = ip.String()
-		outbound.WireGuardOptions.Server = ip.String()
+		switch outbound.Type {
+		case "vless":
+			if opt, ok := outbound.Options.(*option.VLESSOutboundOptions); ok {
+				opt.Server = ip.String()
+			}
+		case "vmess":
+			if opt, ok := outbound.Options.(*option.VMessOutboundOptions); ok {
+				opt.Server = ip.String()
+			}
+		case "trojan":
+			if opt, ok := outbound.Options.(*option.TrojanOutboundOptions); ok {
+				opt.Server = ip.String()
+			}
+		case "wireguard":
+			if opt, ok := outbound.Options.(*option.LegacyWireGuardOutboundOptions); ok {
+				opt.Server = ip.String()
+			}
+		}
 	}
 	instance, err := v2.RunInstance(nil, config)
 	if err != nil {
@@ -221,10 +235,24 @@ func (e *CleanIPExtension) Close() error {
 
 func (e *CleanIPExtension) modifyIP(outbound option.Outbound, ip netip.Addr) {
 	// TODO: base on config Type
-	outbound.VLESSOptions.Server = ip.String()
-	outbound.VMessOptions.Server = ip.String()
-	outbound.TrojanOptions.Server = ip.String()
-	outbound.WireGuardOptions.Server = ip.String()
+	switch outbound.Type {
+	case "vless":
+		if opt, ok := outbound.Options.(*option.VLESSOutboundOptions); ok {
+			opt.Server = ip.String()
+		}
+	case "vmess":
+		if opt, ok := outbound.Options.(*option.VMessOutboundOptions); ok {
+			opt.Server = ip.String()
+		}
+	case "trojan":
+		if opt, ok := outbound.Options.(*option.TrojanOutboundOptions); ok {
+			opt.Server = ip.String()
+		}
+	case "wireguard":
+		if opt, ok := outbound.Options.(*option.LegacyWireGuardOutboundOptions); ok {
+			opt.Server = ip.String()
+		}
+	}
 }
 
 func (e *CleanIPExtension) BeforeAppConnect(hiddifySettings *config.HiddifyOptions, singconfig *option.Options) error {
